@@ -45,6 +45,5 @@ export const description = string().max(500).optional();
 // Roles
 export const roleName = string().min(1).max(15);
 export const roleColor = string().length(7).optional(); // RGB
-export const roleDescription = string().max(50).optional();
 export const members = profileId.array();
 export const membersOptional = profileId.array().optional();

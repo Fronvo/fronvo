@@ -72,7 +72,6 @@ CREATE TABLE roles (
 	id          		UUID 			PRIMARY KEY DEFAULT uuid_generate_v4(),
 	name				VARCHAR(20)		NOT NULL,
 	hex_color			VARCHAR(8)		NOT NULL,
-	description			TEXT			DEFAULT '',
 	created_at			TIMESTAMP		NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	server_id			UUID			REFERENCES servers(id)
 );

@@ -1,4 +1,10 @@
-import { LastStatus, Namespaces, OnlineStatus, SocketEvents } from "./types";
+import {
+  LastStatus,
+  Namespaces,
+  OnlineStatus,
+  RoleWithMembers,
+  SocketEvents,
+} from "./types";
 import { v4 } from "uuid";
 import { associatedSockets, prismaClient, server } from "./vars";
 import gmail from "gmail-send";
@@ -278,21 +284,36 @@ export async function getBannedServerMember(
   });
 }
 
-export async function assignRoleToMembers(
+export async function updateRoleMembers(
   serverId: string,
-  roleId: string,
+  role: RoleWithMembers,
   members: string[]
 ) {
+  const memberIds = (role.member_roles || []).map((v) => v.profile_id);
+
+  const newMembers = members.filter((v) => !memberIds.includes(v));
+  const removedMembers = memberIds.filter((v) => !members.includes(v));
+
   await prismaClient.member_roles.createMany({
-    data: (members as string[]).map((v) => {
+    data: newMembers.map((v) => {
       return {
         profile_id: v,
-        role_id: roleId,
+        role_id: role.id,
         server_id: serverId,
       };
     }),
 
     skipDuplicates: true,
+  });
+
+  await prismaClient.member_roles.deleteMany({
+    where: {
+      profile_id: {
+        in: removedMembers,
+      },
+
+      role_id: role.id,
+    },
   });
 }
 

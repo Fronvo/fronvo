@@ -43,6 +43,10 @@ export default async function checkRoleOwner(
       id: roleId,
       server_id: server.id,
     },
+
+    include: {
+      member_roles: true,
+    },
   });
 
   if (!role) {

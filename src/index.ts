@@ -1,4 +1,5 @@
-import { accounts, channels, roles, servers } from "@prisma/client";
+import { accounts, channels, servers } from "@prisma/client";
+import { RoleWithMembers } from "types";
 
 declare global {
   namespace Express {
@@ -9,7 +10,7 @@ declare global {
       serverId?: string;
       channel?: channels;
       channelId?: string;
-      role?: roles;
+      role?: RoleWithMembers;
       roleId?: string;
     }
   }

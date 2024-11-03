@@ -1,3 +1,5 @@
+import { member_roles, roles } from "@prisma/client";
+
 export type LastStatus = 0 | 1 | 2 | 3;
 export type OnlineStatus = "Online" | "Do Not Disturb" | "Idle" | "Offline";
 
@@ -14,3 +16,5 @@ export type SocketEvents =
   | "noteUpdated"
   | "postShared"
   | "serverCreated";
+
+export type RoleWithMembers = roles & { member_roles: member_roles[] };

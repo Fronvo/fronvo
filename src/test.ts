@@ -307,7 +307,6 @@ describe("Roles", () => {
     const res = await request.post("/roles/create").send({
       id: serverId,
       name: "test",
-      description: "Some test description",
       color: "#123456",
       members: [profileId2],
     });
@@ -324,9 +323,8 @@ describe("Roles", () => {
       id: serverId,
       roleId,
       name: "Admin",
-      description: "Admin description",
       color: "#ffffff",
-      members: [profileId2]
+      members: [profileId2],
     });
 
     expect(res.status).toEqual(200);

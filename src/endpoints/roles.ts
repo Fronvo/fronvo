@@ -1,13 +1,7 @@
 import { Request, Response } from "express";
+import { members, membersOptional, roleColor, roleName } from "../schemas";
 import {
-  members,
-  membersOptional,
-  roleColor,
-  roleDescription,
-  roleName,
-} from "../schemas";
-import {
-  assignRoleToMembers,
+  updateRoleMembers,
   deleteServerRole,
   getParams,
   getServerMember,
@@ -19,14 +13,12 @@ import { object } from "zod";
 
 const createRoleSchema = object({
   name: roleName,
-  description: roleDescription,
   color: roleColor,
   members: membersOptional,
 });
 
 const editRoleSchema = object({
   name: roleName,
-  description: roleDescription,
   color: roleColor,
   members: membersOptional,
 });
@@ -34,16 +26,10 @@ const editRoleSchema = object({
 const assignRoleSchema = object({ members });
 
 export async function createRole(req: Request, res: Response) {
-  const { name, description, color, members } = getParams(req, [
-    "name",
-    "description",
-    "color",
-    "members",
-  ]);
+  const { name, color, members } = getParams(req, ["name", "color", "members"]);
 
   const schemaResult = createRoleSchema.safeParse({
     name,
-    description,
     color,
     members,
   });
@@ -72,7 +58,6 @@ export async function createRole(req: Request, res: Response) {
   const roleData = await prismaClient.roles.create({
     data: {
       name,
-      description,
       hex_color: color || "#000000",
       server_id: req.serverId,
     },
@@ -80,31 +65,29 @@ export async function createRole(req: Request, res: Response) {
     select: {
       id: true,
       name: true,
-      description: true,
       hex_color: true,
       server_id: true,
       created_at: true,
+      member_roles: true,
     },
   });
 
   if (members) {
-    await assignRoleToMembers(req.serverId, roleData.id, members);
+    await updateRoleMembers(req.serverId, roleData, members);
   }
 
   return sendSuccess(res, { roleData }, true);
 }
 
 export async function editRole(req: Request, res: Response) {
-  const { name, description, color, members } = getParams(req, [
+  const { name, color, members } = getParams(req, [
     "name",
-    "description",
     "color",
     "members",
   ]);
 
   const schemaResult = editRoleSchema.safeParse({
     name,
-    description,
     color,
     members,
   });
@@ -129,14 +112,12 @@ export async function editRole(req: Request, res: Response) {
 
     data: {
       name,
-      description,
       hex_color: color || req.role.hex_color,
     },
 
     select: {
       id: true,
       name: true,
-      description: true,
       hex_color: true,
       server_id: true,
       created_at: true,
@@ -144,7 +125,7 @@ export async function editRole(req: Request, res: Response) {
   });
 
   if (members) {
-    await assignRoleToMembers(req.serverId, req.roleId, members);
+    await updateRoleMembers(req.serverId, req.role, members);
   }
 
   return sendSuccess(res, { roleData }, true);
@@ -167,7 +148,7 @@ export async function assignRole(req: Request, res: Response) {
     }
   }
 
-  await assignRoleToMembers(req.serverId, req.roleId, members);
+  await updateRoleMembers(req.serverId, req.role, members);
 
   return sendSuccess(res, "Role assigned to member(s).");
 }

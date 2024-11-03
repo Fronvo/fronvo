@@ -75,7 +75,6 @@ model roles {
   id           String         @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
   name         String         @db.VarChar(20)
   hex_color    String         @db.VarChar(8)
-  description  String?        @default("")
   created_at   DateTime       @default(now()) @db.Timestamp(6)
   server_id    String?        @db.Uuid
   member_roles member_roles[]
