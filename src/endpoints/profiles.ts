@@ -7,7 +7,7 @@ import {
   sendSuccess,
 } from "../utils";
 import { imagekit, prismaClient } from "../vars";
-import { accounts, servers } from "@prisma/client";
+import { accounts, member_roles, servers } from "@prisma/client";
 import { DMOption, FilterOption, LastStatus } from "types";
 import { differenceInHours, differenceInMonths } from "date-fns";
 import { object } from "zod";
@@ -218,7 +218,7 @@ export async function fetchMe(req: Request, res: Response) {
               username: string;
               bio: string;
               created_at: string;
-              member_roles: [];
+              member_roles: member_roles[];
             };
           }[]
         ).map(({ id, server_id, profile_id, accounts, ...member }) => {
@@ -227,7 +227,9 @@ export async function fetchMe(req: Request, res: Response) {
           return {
             ...member,
             ...finalAccounts,
-            roles: accounts.member_roles,
+            roles: accounts.member_roles.filter(
+              (role) => role.server_id === server_id
+            ),
             id: profile_id,
           };
         }),
