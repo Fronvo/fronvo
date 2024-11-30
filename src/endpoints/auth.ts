@@ -5,6 +5,7 @@ import {
   deleteMemberServerRoles,
   deleteMemberServers,
   deleteServer,
+  deleteUser,
   getParams,
   sendError,
   sendSuccess,
@@ -12,7 +13,6 @@ import {
 import { imagekit, prismaClient } from "../vars";
 import { Request, Response } from "express";
 import jwt from "jsonwebtoken";
-import { v4 } from "uuid";
 import { email, password, profileId, username } from "../schemas";
 import { object } from "zod";
 
@@ -212,10 +212,15 @@ export async function deleteAccount(req: Request, res: Response) {
   await deleteMemberServerRoles(req.userId);
   await deleteMemberServerBans(req.userId);
 
-  // Maybe no posts / testing
-  try {
-    await imagekit.deleteFolder(`posts/${req.user.id}`);
-  } catch (e) {}
+  // Delete the account
+  await deleteUser(req.userId);
+
+  if (process.env.NODE_ENV !== "test") {
+    // Maybe no posts / testing
+    try {
+      await imagekit.deleteFolder(`posts/${req.userId}`);
+    } catch (e) {}
+  }
 
   return sendSuccess(res, "Account deleted");
 }

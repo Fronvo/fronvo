@@ -411,3 +411,17 @@ export async function deleteServer(serverId: string) {
     });
   }
 }
+
+export async function deleteUser(profileId: string) {
+  await prismaClient.posts.deleteMany({
+    where: {
+      profile_id: profileId,
+    },
+  });
+
+  await prismaClient.accounts.delete({
+    where: {
+      id: profileId,
+    },
+  });
+}
