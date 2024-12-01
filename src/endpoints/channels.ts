@@ -97,6 +97,7 @@ export async function deleteChannel(req: Request, res: Response) {
   await prismaClient.channels.delete({
     where: {
       id: req.channelId,
+      server_id: req.serverId,
     },
   });
 
