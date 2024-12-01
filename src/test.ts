@@ -3,7 +3,7 @@ import server from "./api";
 import supertest from "supertest";
 import defaults from "superagent-defaults";
 import { getNormalisedV4 } from "./utils";
-import { channels, roles, servers } from "@prisma/client";
+import { channels, member_messages, roles, servers } from "@prisma/client";
 
 const request = defaults(supertest(server));
 
@@ -17,6 +17,7 @@ let refreshToken = "";
 let serverId = "";
 let serverInvite = "";
 let channelId = "";
+let messageId = "";
 let roleId = "";
 
 // Account 2
@@ -378,6 +379,33 @@ describe("Members", () => {
     const res = await request.post("/members/unban").send({
       id: serverId,
       memberId: profileId2,
+    });
+
+    expect(res.status).toEqual(200);
+    expect(res.type).toEqual(expect.stringContaining("json"));
+  });
+});
+
+describe("Messages", () => {
+  it("Create message", async () => {
+    const res = await request.post("/messages/create").send({
+      id: serverId,
+      channelId,
+      content: "hello world",
+    });
+
+    expect(res.status).toEqual(200);
+    expect(res.type).toEqual(expect.stringContaining("json"));
+
+    const messageData = res.body.messageData as member_messages;
+    messageId = messageData.id;
+  });
+
+  it("Delete message", async () => {
+    const res = await request.post("/messages/delete").send({
+      id: serverId,
+      channelId,
+      messageId,
     });
 
     expect(res.status).toEqual(200);

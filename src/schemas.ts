@@ -47,3 +47,6 @@ export const roleName = string().min(1).max(15);
 export const roleColor = string().length(7).optional(); // RGB
 export const members = profileId.array();
 export const membersOptional = profileId.array().optional();
+
+// Messages
+export const messageContent = string().min(1).max(250);

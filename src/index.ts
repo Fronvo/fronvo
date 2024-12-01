@@ -1,4 +1,4 @@
-import { accounts, channels, servers } from "@prisma/client";
+import { accounts, channels, member_messages, servers } from "@prisma/client";
 import { RoleWithMembers } from "types";
 
 declare global {
@@ -12,6 +12,8 @@ declare global {
       channelId?: string;
       role?: RoleWithMembers;
       roleId?: string;
+      message?: member_messages;
+      messageId?: string;
     }
   }
 }
