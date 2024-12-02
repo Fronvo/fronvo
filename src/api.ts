@@ -48,7 +48,12 @@ import {
   editRole,
 } from "./endpoints/roles";
 import { banMember, kickMember, unbanMember } from "./endpoints/members";
-import { createMessage, deleteMessage, editMessage } from "./endpoints/messages";
+import {
+  createMessage,
+  deleteMessage,
+  editMessage,
+  pinMessage,
+} from "./endpoints/messages";
 import { getVersion, keepAlive } from "./endpoints/other";
 
 // Middleware
@@ -59,6 +64,7 @@ import checkServerAdmin from "./middleware/checkServerOwner";
 import checkChannelOwner from "./middleware/checkChannelOwner";
 import checkRoleOwner from "./middleware/checkRoleOwner";
 import checkChannel from "./middleware/checkChannel";
+import checkMessage from "./middleware/checkMessage";
 import checkMessageOwner from "./middleware/checkMessageOwner";
 
 // Helpers
@@ -140,6 +146,7 @@ app.post("/members/unban", checkServerAdmin, unbanMember);
 // Messages
 app.post("/messages/create", checkChannel, createMessage);
 app.post("/messages/edit", checkMessageOwner, editMessage);
+app.post("/messages/pin", [checkMessage, checkChannelOwner], pinMessage);
 app.post("/messages/delete", checkMessageOwner, deleteMessage);
 
 // Other

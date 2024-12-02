@@ -3,6 +3,7 @@ import { messageContent } from "../schemas";
 import { getParams, sendError, sendSuccess } from "../utils";
 import { prismaClient } from "../vars";
 import { object } from "zod";
+import { member_messages_pinned } from "@prisma/client";
 
 const messageSchema = object({
   content: messageContent,
@@ -70,6 +71,31 @@ export async function editMessage(req: Request, res: Response) {
   });
 
   return sendSuccess(res, { messageData }, true);
+}
+
+export async function pinMessage(req: Request, res: Response) {
+  const messagePinned =
+    (await prismaClient.member_messages_pinned.count({
+      where: { message_id: req.messageId },
+    })) > 0;
+
+  const pinnedMessageData: Partial<member_messages_pinned> = {
+    message_id: req.messageId,
+    channel_id: req.channelId,
+    server_id: req.serverId,
+  };
+
+  if (messagePinned) {
+    await prismaClient.member_messages_pinned.deleteMany({
+      where: pinnedMessageData,
+    });
+  } else {
+    await prismaClient.member_messages_pinned.create({
+      data: pinnedMessageData,
+    });
+  }
+
+  return sendSuccess(res, `Message ${messagePinned ? "un" : ""}pinned.`);
 }
 
 export async function deleteMessage(req: Request, res: Response) {

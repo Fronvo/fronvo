@@ -90,6 +90,13 @@ CREATE TABLE member_messages (
 	server_id			UUID			REFERENCES servers(id)
 );
 
+CREATE TABLE member_messages_pinned (
+	id          		UUID 			PRIMARY KEY DEFAULT uuid_generate_v4(),
+	message_id			UUID			REFERENCES member_messages(id),
+	channel_id			UUID			REFERENCES channels(id),
+	server_id			UUID			REFERENCES servers(id)
+);
+
 CREATE TABLE member_roles (
 	id          		UUID 			PRIMARY KEY DEFAULT uuid_generate_v4(),
 	assigned_at			TIMESTAMP		DEFAULT CURRENT_TIMESTAMP,

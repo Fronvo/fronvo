@@ -43,13 +43,14 @@ model posts {
 }
 
 model channels {
-  id              String            @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
-  name            String            @db.VarChar(20)
-  description     String?           @default("")
-  created_at      DateTime          @default(now()) @db.Timestamp(6)
-  server_id       String?           @db.Uuid
-  servers         servers?          @relation(fields: [server_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  member_messages member_messages[]
+  id                     String                   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  name                   String                   @db.VarChar(20)
+  description            String?                  @default("")
+  created_at             DateTime                 @default(now()) @db.Timestamp(6)
+  server_id              String?                  @db.Uuid
+  servers                servers?                 @relation(fields: [server_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  member_messages        member_messages[]
+  member_messages_pinned member_messages_pinned[]
 }
 
 model private_messages {
@@ -82,39 +83,41 @@ model roles {
 }
 
 model servers {
-  id                    String                  @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
-  name                  String                  @db.VarChar(30)
-  avatar                String                  @default("")
-  banner                String                  @default("")
-  invite                String                  @db.Char(8)
-  invites_disabled      Boolean                 @default(false)
-  created_at            DateTime                @default(now()) @db.Timestamp(6)
-  owner_id              String?                 @db.VarChar(30)
-  channels              channels[]
-  member_messages       member_messages[]
-  member_roles          member_roles[]
-  member_servers        member_servers[]
-  member_servers_banned member_servers_banned[]
-  roles                 roles[]
-  accounts              accounts?               @relation(fields: [owner_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  id                     String                   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  name                   String                   @db.VarChar(30)
+  avatar                 String                   @default("")
+  banner                 String                   @default("")
+  invite                 String                   @db.Char(8)
+  invites_disabled       Boolean                  @default(false)
+  created_at             DateTime                 @default(now()) @db.Timestamp(6)
+  owner_id               String?                  @db.VarChar(30)
+  channels               channels[]
+  member_messages        member_messages[]
+  member_messages_pinned member_messages_pinned[]
+  member_roles           member_roles[]
+  member_servers         member_servers[]
+  member_servers_banned  member_servers_banned[]
+  roles                  roles[]
+  accounts               accounts?                @relation(fields: [owner_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 }
 
 model member_messages {
-  id               String            @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
-  content          String
-  edited           Boolean           @default(false)
-  created_at       DateTime          @default(now()) @db.Timestamp(6)
-  attachments      String[]
-  spotify_embeds   String[]
-  tenor_urls       String[]
-  reply_id         String?           @db.Uuid
-  profile_id       String?           @db.VarChar(30)
-  channel_id       String?           @db.Uuid
-  server_id        String?           @db.Uuid
-  channels         channels?         @relation(fields: [channel_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  accounts         accounts?         @relation(fields: [profile_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  private_messages private_messages? @relation(fields: [reply_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  servers          servers?          @relation(fields: [server_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  id                     String                   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  content                String
+  edited                 Boolean                  @default(false)
+  created_at             DateTime                 @default(now()) @db.Timestamp(6)
+  attachments            String[]
+  spotify_embed          String?
+  tenor_url              String?
+  reply_id               String?                  @db.Uuid
+  profile_id             String?                  @db.VarChar(30)
+  channel_id             String?                  @db.Uuid
+  server_id              String?                  @db.Uuid
+  channels               channels?                @relation(fields: [channel_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  accounts               accounts?                @relation(fields: [profile_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  private_messages       private_messages?        @relation(fields: [reply_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  servers                servers?                 @relation(fields: [server_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  member_messages_pinned member_messages_pinned[]
 }
 
 model member_roles {
@@ -161,4 +164,15 @@ model private_rooms {
   last_message_at        DateTime?                @db.Timestamp(6)
   private_messages       private_messages[]
   private_messages_users private_messages_users[]
+}
+
+model member_messages_pinned {
+  id              String           @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  message_id      String?          @db.Uuid
+  profile_id      String?          @db.VarChar(30)
+  channel_id      String?          @db.Uuid
+  server_id       String?          @db.Uuid
+  channels        channels?        @relation(fields: [channel_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  member_messages member_messages? @relation(fields: [message_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  servers         servers?         @relation(fields: [server_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 }

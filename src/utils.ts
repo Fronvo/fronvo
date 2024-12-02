@@ -317,6 +317,12 @@ export async function updateRoleMembers(
   });
 }
 
+export async function deleteUserPosts(profileId: string) {
+  await prismaClient.posts.deleteMany({
+    where: { profile_id: profileId },
+  });
+}
+
 export async function deleteMemberServerRoles(memberId: string) {
   await prismaClient.member_roles.deleteMany({
     where: { profile_id: memberId },
@@ -361,6 +367,18 @@ export async function deleteMemberServerMessages(memberId: string) {
   });
 }
 
+export async function deleteMemberServerPins(memberId: string) {
+  await prismaClient.member_messages_pinned.deleteMany({
+    where: { profile_id: memberId },
+  });
+}
+
+export async function deleteServerPins(serverId: string) {
+  await prismaClient.member_messages_pinned.deleteMany({
+    where: { server_id: serverId },
+  });
+}
+
 export async function deleteServerMessages(serverId: string) {
   await prismaClient.member_messages.deleteMany({
     where: { server_id: serverId },
@@ -395,6 +413,7 @@ export async function deleteServer(serverId: string) {
   await Promise.all([
     deleteServerRoles(serverId),
     deleteServerChannels(serverId),
+    deleteServerPins(serverId),
     deleteServerMessages(serverId),
     deleteServerBans(serverId),
     deleteServerMembers(serverId),
@@ -413,15 +432,23 @@ export async function deleteServer(serverId: string) {
 }
 
 export async function deleteUser(profileId: string) {
-  await prismaClient.posts.deleteMany({
-    where: {
-      profile_id: profileId,
-    },
-  });
+  await Promise.all([
+    deleteMemberServerRoles(profileId),
+    deleteMemberServerPins(profileId),
+    deleteMemberServerMessages(profileId),
+    deleteMemberServerBans(profileId),
+    deleteMemberServers(profileId),
+    deleteUserPosts(profileId),
+  ]);
 
-  await prismaClient.accounts.delete({
-    where: {
-      id: profileId,
-    },
-  });
+  // Once all constraints have been removed
+  await deleteUserObject();
+
+  async function deleteUserObject() {
+    await prismaClient.accounts.delete({
+      where: {
+        id: profileId,
+      },
+    });
+  }
 }
