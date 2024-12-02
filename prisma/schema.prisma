@@ -102,6 +102,7 @@ model servers {
 model member_messages {
   id               String            @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
   content          String
+  edited           Boolean           @default(false)
   created_at       DateTime          @default(now()) @db.Timestamp(6)
   attachments      String[]
   spotify_embeds   String[]

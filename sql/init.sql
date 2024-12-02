@@ -79,6 +79,7 @@ CREATE TABLE roles (
 CREATE TABLE member_messages (
 	id          		UUID 			PRIMARY KEY DEFAULT uuid_generate_v4(),
 	content				TEXT			NOT NULL,
+	edited				BOOLEAN			NOT NULL DEFAULT false,
 	created_at			TIMESTAMP		NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	attachments			TEXT[],
 	spotify_embed		TEXT,

@@ -4,14 +4,14 @@ import { getParams, sendError, sendSuccess } from "../utils";
 import { prismaClient } from "../vars";
 import { object } from "zod";
 
-const createMessageSchema = object({
+const messageSchema = object({
   content: messageContent,
 });
 
 export async function createMessage(req: Request, res: Response) {
   const { content } = getParams(req, ["content"]);
 
-  const schemaResult = createMessageSchema.safeParse({ content });
+  const schemaResult = messageSchema.safeParse({ content });
 
   if (!schemaResult.success) {
     return sendError(400, res, schemaResult.error.errors, true);
@@ -23,6 +23,40 @@ export async function createMessage(req: Request, res: Response) {
       profile_id: req.userId,
       channel_id: req.channelId,
       server_id: req.serverId,
+    },
+
+    select: {
+      id: true,
+      content: true,
+      server_id: true,
+      channel_id: true,
+      profile_id: true,
+      created_at: true,
+    },
+  });
+
+  return sendSuccess(res, { messageData }, true);
+}
+
+export async function editMessage(req: Request, res: Response) {
+  const { content } = getParams(req, ["content"]);
+
+  const schemaResult = messageSchema.safeParse({ content });
+
+  if (!schemaResult.success) {
+    return sendError(400, res, schemaResult.error.errors, true);
+  }
+
+  const messageData = await prismaClient.member_messages.update({
+    where: {
+      id: req.messageId,
+      channel_id: req.channelId,
+      server_id: req.serverId,
+    },
+
+    data: {
+      content,
+      edited: true,
     },
 
     select: {

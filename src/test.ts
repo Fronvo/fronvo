@@ -401,6 +401,18 @@ describe("Messages", () => {
     messageId = messageData.id;
   });
 
+  it("Edit message", async () => {
+    const res = await request.post("/messages/edit").send({
+      id: serverId,
+      channelId,
+      messageId,
+      content: "hello world edit",
+    });
+
+    expect(res.status).toEqual(200);
+    expect(res.type).toEqual(expect.stringContaining("json"));
+  });
+
   it("Delete message", async () => {
     const res = await request.post("/messages/delete").send({
       id: serverId,
