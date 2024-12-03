@@ -7,7 +7,14 @@ import {
   sendSuccess,
 } from "../utils";
 import { imagekit, prismaClient } from "../vars";
-import { accounts, member_roles, servers } from "@prisma/client";
+import {
+  accounts,
+  channels,
+  member_messages,
+  member_messages_pinned,
+  member_roles,
+  servers,
+} from "@prisma/client";
 import { DMOption, FilterOption, LastStatus } from "types";
 import { differenceInHours, differenceInMonths } from "date-fns";
 import { object } from "zod";
@@ -34,6 +41,11 @@ interface FetchedAccount extends accounts {
   filter_option: FilterOption;
   dms: FetchedDM[];
   servers: servers[];
+}
+
+interface FetchedChannels extends channels {
+  member_messages: member_messages[];
+  member_messages_pinned: member_messages_pinned[];
 }
 
 const updateStatusSchema = object({ status });
@@ -154,6 +166,11 @@ export async function fetchMe(req: Request, res: Response) {
 
     include: {
       channels: {
+        include: {
+          member_messages: true,
+          member_messages_pinned: true,
+        },
+
         orderBy: {
           created_at: "asc",
         },
@@ -201,7 +218,7 @@ export async function fetchMe(req: Request, res: Response) {
 
   profileData.servers = profileData.servers.map(
     // @ts-ignore
-    ({ member_servers_banned, member_servers, ...v }) => {
+    ({ member_servers_banned, member_servers, channels, ...v }) => {
       return {
         ...v,
         members: (
@@ -252,6 +269,15 @@ export async function fetchMe(req: Request, res: Response) {
         ).map(({ id, server_id, profile_id, accounts, ...member }) => {
           return { ...member, ...accounts, id: profile_id };
         }),
+        channels: (channels as FetchedChannels[])?.map(
+          ({ member_messages, member_messages_pinned, ...channel }) => {
+            return {
+              messages: member_messages,
+              pinned_messages: member_messages_pinned,
+              ...channel,
+            };
+          }
+        ),
       };
     }
   );
