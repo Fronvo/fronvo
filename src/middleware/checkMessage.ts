@@ -48,6 +48,11 @@ export default async function checkMessage(
       id: channelId,
       server_id: server.id,
     },
+
+    include: {
+      member_messages: true,
+      member_messages_pinned: true,
+    },
   });
 
   if (!channel) {
