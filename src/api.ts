@@ -53,6 +53,7 @@ import {
   deleteMessage,
   editMessage,
   pinMessage,
+  unpinMessage,
 } from "./endpoints/messages";
 import { getVersion, keepAlive } from "./endpoints/other";
 
@@ -147,6 +148,7 @@ app.post("/members/unban", checkServerAdmin, unbanMember);
 app.post("/messages/create", checkChannel, createMessage);
 app.post("/messages/edit", checkMessageOwner, editMessage);
 app.post("/messages/pin", [checkMessage, checkChannelOwner], pinMessage);
+app.post("/messages/unpin", [checkMessage, checkChannelOwner], unpinMessage);
 app.post("/messages/delete", checkMessageOwner, deleteMessage);
 
 // Other

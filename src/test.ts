@@ -425,7 +425,7 @@ describe("Messages", () => {
   });
 
   it("Unpin message", async () => {
-    const res = await request.post("/messages/pin").send({
+    const res = await request.post("/messages/unpin").send({
       id: serverId,
       channelId,
       messageId,

@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { messageContent } from "../schemas";
-import { getParams, sendError, sendSuccess } from "../utils";
+import { getMessagePinned, getParams, sendError, sendSuccess } from "../utils";
 import { prismaClient } from "../vars";
 import { object } from "zod";
 import { member_messages_pinned } from "@prisma/client";
@@ -74,10 +74,11 @@ export async function editMessage(req: Request, res: Response) {
 }
 
 export async function pinMessage(req: Request, res: Response) {
-  const messagePinned =
-    (await prismaClient.member_messages_pinned.count({
-      where: { message_id: req.messageId },
-    })) > 0;
+  const messagePinned = await getMessagePinned(
+    req.serverId,
+    req.channelId,
+    req.messageId
+  );
 
   const pinnedMessageData: Partial<member_messages_pinned> = {
     message_id: req.messageId,
@@ -86,16 +87,38 @@ export async function pinMessage(req: Request, res: Response) {
   };
 
   if (messagePinned) {
-    await prismaClient.member_messages_pinned.deleteMany({
-      where: pinnedMessageData,
-    });
-  } else {
-    await prismaClient.member_messages_pinned.create({
-      data: pinnedMessageData,
-    });
+    return sendError(400, res, "Message already pinned.");
   }
 
-  return sendSuccess(res, `Message ${messagePinned ? "un" : ""}pinned.`);
+  await prismaClient.member_messages_pinned.create({
+    data: pinnedMessageData,
+  });
+
+  return sendSuccess(res, "Message pinned.");
+}
+
+export async function unpinMessage(req: Request, res: Response) {
+  const messagePinned = await getMessagePinned(
+    req.serverId,
+    req.channelId,
+    req.messageId
+  );
+
+  if (!messagePinned) {
+    return sendError(400, res, "Message is not pinned.");
+  }
+
+  const pinnedMessageData: Partial<member_messages_pinned> = {
+    message_id: req.messageId,
+    channel_id: req.channelId,
+    server_id: req.serverId,
+  };
+
+  await prismaClient.member_messages_pinned.deleteMany({
+    where: pinnedMessageData,
+  });
+
+  return sendSuccess(res, "Message unpinned.");
 }
 
 export async function deleteMessage(req: Request, res: Response) {

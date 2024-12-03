@@ -256,6 +256,22 @@ export async function getServerMember(serverId: string, memberId: string) {
   });
 }
 
+export async function getMessagePinned(
+  serverId: string,
+  channelId: string,
+  messageId: string
+) {
+  return (
+    (await prismaClient.member_messages_pinned.count({
+      where: {
+        server_id: serverId,
+        channel_id: channelId,
+        message_id: messageId,
+      },
+    })) > 0
+  );
+}
+
 export async function removeServerMember(serverId: string, memberId: string) {
   await Promise.all([
     deleteMemberServerRoles(memberId),
