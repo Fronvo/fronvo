@@ -7,15 +7,8 @@ import {
   sendSuccess,
 } from "../utils";
 import { imagekit, prismaClient } from "../vars";
-import {
-  accounts,
-  channels,
-  member_messages,
-  member_messages_pinned,
-  member_roles,
-  servers,
-} from "@prisma/client";
-import { DMOption, FilterOption, LastStatus } from "types";
+import { accounts, member_roles, servers } from "@prisma/client";
+import { ChannelWithMessages, DMOption, FilterOption, LastStatus } from "types";
 import { differenceInHours, differenceInMonths } from "date-fns";
 import { object } from "zod";
 import {
@@ -41,11 +34,6 @@ interface FetchedAccount extends accounts {
   filter_option: FilterOption;
   dms: FetchedDM[];
   servers: servers[];
-}
-
-interface FetchedChannels extends channels {
-  member_messages: member_messages[];
-  member_messages_pinned: member_messages_pinned[];
 }
 
 const updateStatusSchema = object({ status });
@@ -269,7 +257,7 @@ export async function fetchMe(req: Request, res: Response) {
         ).map(({ id, server_id, profile_id, accounts, ...member }) => {
           return { ...member, ...accounts, id: profile_id };
         }),
-        channels: (channels as FetchedChannels[])?.map(
+        channels: (channels as ChannelWithMessages[])?.map(
           ({ member_messages, member_messages_pinned, ...channel }) => {
             return {
               messages: member_messages,

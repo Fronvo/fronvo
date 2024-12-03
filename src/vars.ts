@@ -25,6 +25,7 @@ export const MAX_SERVERS = 10;
 export const MAX_CONCURRENT_SERVERS = 50;
 export const MAX_CHANNELS = 20;
 export const MAX_ROLES = 15;
+export const MAX_PINS = 30;
 
 // Socket.IO
 export let server: Server;

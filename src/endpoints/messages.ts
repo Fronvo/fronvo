@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { messageContent } from "../schemas";
 import { getMessagePinned, getParams, sendError, sendSuccess } from "../utils";
-import { prismaClient } from "../vars";
+import { MAX_PINS, prismaClient } from "../vars";
 import { object } from "zod";
 import { member_messages_pinned } from "@prisma/client";
 
@@ -88,6 +88,14 @@ export async function pinMessage(req: Request, res: Response) {
 
   if (messagePinned) {
     return sendError(400, res, "Message already pinned.");
+  }
+
+  if (req.channel.member_messages_pinned.length >= MAX_PINS) {
+    return sendError(
+      400,
+      res,
+      `Can\'t pin more than ${MAX_PINS} messages in a channel.`
+    );
   }
 
   await prismaClient.member_messages_pinned.create({
