@@ -50,3 +50,5 @@ export const membersOptional = profileId.array().optional();
 
 // Messages
 export const messageContent = string().min(1).max(250);
+export const fromSchema = number().min(0);
+export const toSchema = number().min(0);

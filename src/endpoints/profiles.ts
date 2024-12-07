@@ -154,11 +154,6 @@ export async function fetchMe(req: Request, res: Response) {
 
     include: {
       channels: {
-        include: {
-          member_messages: true,
-          member_messages_pinned: true,
-        },
-
         orderBy: {
           created_at: "asc",
         },
@@ -206,7 +201,7 @@ export async function fetchMe(req: Request, res: Response) {
 
   profileData.servers = profileData.servers.map(
     // @ts-ignore
-    ({ member_servers_banned, member_servers, channels, ...v }) => {
+    ({ member_servers_banned, member_servers, ...v }) => {
       return {
         ...v,
         members: (
@@ -257,15 +252,6 @@ export async function fetchMe(req: Request, res: Response) {
         ).map(({ id, server_id, profile_id, accounts, ...member }) => {
           return { ...member, ...accounts, id: profile_id };
         }),
-        channels: (channels as ChannelWithMessages[])?.map(
-          ({ member_messages, member_messages_pinned, ...channel }) => {
-            return {
-              messages: member_messages,
-              pinned_messages: member_messages_pinned,
-              ...channel,
-            };
-          }
-        ),
       };
     }
   );

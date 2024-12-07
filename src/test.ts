@@ -413,6 +413,18 @@ describe("Messages", () => {
     expect(res.type).toEqual(expect.stringContaining("json"));
   });
 
+  it("Fetch messages", async () => {
+    const res = await request.post("/messages/fetch").send({
+      id: serverId,
+      channelId,
+      from: 0,
+      to: 50,
+    });
+
+    expect(res.status).toEqual(200);
+    expect(res.type).toEqual(expect.stringContaining("json"));
+  });
+
   it("Pin message", async () => {
     const res = await request.post("/messages/pin").send({
       id: serverId,

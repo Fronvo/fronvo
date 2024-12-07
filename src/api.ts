@@ -52,6 +52,7 @@ import {
   createMessage,
   deleteMessage,
   editMessage,
+  fetchMessages,
   pinMessage,
   unpinMessage,
 } from "./endpoints/messages";
@@ -147,6 +148,7 @@ app.post("/members/unban", checkServerAdmin, unbanMember);
 // Messages
 app.post("/messages/create", checkChannel, createMessage);
 app.post("/messages/edit", checkMessageOwner, editMessage);
+app.post("/messages/fetch", checkChannel, fetchMessages);
 app.post("/messages/pin", [checkMessage, checkChannelOwner], pinMessage);
 app.post("/messages/unpin", [checkMessage, checkChannelOwner], unpinMessage);
 app.post("/messages/delete", checkMessageOwner, deleteMessage);

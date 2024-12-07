@@ -1,12 +1,17 @@
 import { Request, Response } from "express";
-import { messageContent } from "../schemas";
+import { fromSchema, messageContent, toSchema } from "../schemas";
 import { getMessagePinned, getParams, sendError, sendSuccess } from "../utils";
-import { MAX_PINS, prismaClient } from "../vars";
+import { MAX_MESSAGES_LOADED, MAX_PINS, prismaClient } from "../vars";
 import { object } from "zod";
 import { member_messages_pinned } from "@prisma/client";
 
 const messageSchema = object({
   content: messageContent,
+});
+
+const fetchMessagesSchema = object({
+  from: fromSchema,
+  to: toSchema,
 });
 
 export async function createMessage(req: Request, res: Response) {
@@ -71,6 +76,50 @@ export async function editMessage(req: Request, res: Response) {
   });
 
   return sendSuccess(res, { messageData }, true);
+}
+
+export async function fetchMessages(req: Request, res: Response) {
+  const { from, to } = getParams(req, ["from", "to"]);
+
+  const schemaResult = fetchMessagesSchema.safeParse({ from, to });
+
+  if (!schemaResult.success) {
+    return sendError(400, res, schemaResult.error.errors, true);
+  }
+
+  if (from > to) {
+    return sendError(400, res, "'from' can't be bigger than 'to'.");
+  }
+
+  if (to - from > MAX_MESSAGES_LOADED) {
+    return sendError(
+      400,
+      res,
+      `Can't fetch more than ${MAX_MESSAGES_LOADED} messages at once.`
+    );
+  }
+
+  const messages = await prismaClient.member_messages.findMany({
+    where: {
+      channel_id: req.channelId,
+      server_id: req.serverId,
+    },
+
+    skip: from,
+
+    take: -(to - from),
+
+    select: {
+      id: true,
+      content: true,
+      server_id: true,
+      channel_id: true,
+      profile_id: true,
+      created_at: true,
+    },
+  });
+
+  return sendSuccess(res, { messages }, true);
 }
 
 export async function pinMessage(req: Request, res: Response) {
