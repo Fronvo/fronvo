@@ -4,6 +4,7 @@ import { getMessagePinned, getParams, sendError, sendSuccess } from "../utils";
 import { MAX_MESSAGES_LOADED, MAX_PINS, prismaClient } from "../vars";
 import { object } from "zod";
 import { member_messages_pinned } from "@prisma/client";
+import { ServerAccount } from "types";
 
 const messageSchema = object({
   content: messageContent,
@@ -119,7 +120,77 @@ export async function fetchMessages(req: Request, res: Response) {
     },
   });
 
-  return sendSuccess(res, { messages }, true);
+  let profileIds = messages.map((v) => v.profile_id);
+
+  // Remove duplicates
+  profileIds = profileIds.filter((v, i) => profileIds.indexOf(v) === i);
+
+  // Add account promises
+  const profileData: ServerAccount[] = [];
+
+  await Promise.all(
+    profileIds.map(async (v) => {
+      const data = await prismaClient.accounts.findFirst({
+        where: {
+          id: v,
+        },
+
+        select: {
+          id: true,
+          avatar: true,
+          banner: true,
+          bio: true,
+          created_at: true,
+          last_note: true,
+          last_status: true,
+          username: true,
+          member_servers: true,
+          member_roles: true,
+        },
+      });
+
+      const {
+        id,
+        avatar,
+        banner,
+        bio,
+        created_at,
+        last_note,
+        last_status,
+        username,
+      } = data;
+
+      const server_username = data.member_servers.filter(
+        (v) => v.server_id === req.serverId
+      )[0].server_username;
+
+      const server_avatar = data.member_servers.filter(
+        (v) => v.server_id === req.serverId
+      )[0].server_avatar;
+
+      const roles = data.member_roles
+        .filter((v) => v.server_id === req.serverId)
+        .map((v) => v.role_id);
+
+      const finalData: ServerAccount = {
+        id,
+        avatar,
+        banner,
+        bio,
+        created_at,
+        last_note,
+        last_status,
+        username,
+        server_username,
+        server_avatar,
+        roles,
+      };
+
+      profileData.push(finalData);
+    })
+  );
+
+  return sendSuccess(res, { messages, profileData }, true);
 }
 
 export async function pinMessage(req: Request, res: Response) {

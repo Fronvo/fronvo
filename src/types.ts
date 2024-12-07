@@ -29,3 +29,17 @@ export interface ChannelWithMessages extends channels {
   member_messages: member_messages[];
   member_messages_pinned: member_messages_pinned[];
 }
+
+export interface ServerAccount {
+  id: string;
+  username: string;
+  server_username: string;
+  avatar: string;
+  server_avatar: string;
+  banner: string;
+  bio: string;
+  created_at: Date;
+  last_note: string;
+  last_status: number;
+  roles: string[];
+}
