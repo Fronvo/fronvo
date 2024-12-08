@@ -41,5 +41,5 @@ export interface ServerAccount {
   created_at: Date;
   last_note: string;
   last_status: number;
-  roles: string[];
+  roles: member_roles[];
 }

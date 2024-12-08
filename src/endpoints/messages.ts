@@ -120,75 +120,77 @@ export async function fetchMessages(req: Request, res: Response) {
     },
   });
 
-  let profileIds = messages.map((v) => v.profile_id);
-
-  // Remove duplicates
-  profileIds = profileIds.filter((v, i) => profileIds.indexOf(v) === i);
-
   // Add account promises
   const profileData: ServerAccount[] = [];
 
-  await Promise.all(
-    profileIds.map(async (v) => {
-      const data = await prismaClient.accounts.findFirst({
-        where: {
-          id: v,
-        },
+  if (messages.length > 0) {
+    let profileIds = messages.map((v) => v.profile_id);
 
-        select: {
-          id: true,
-          avatar: true,
-          banner: true,
-          bio: true,
-          created_at: true,
-          last_note: true,
-          last_status: true,
-          username: true,
-          member_servers: true,
-          member_roles: true,
-        },
-      });
+    // Remove duplicates
+    profileIds = profileIds.filter((v, i) => profileIds.indexOf(v) === i);
 
-      const {
-        id,
-        avatar,
-        banner,
-        bio,
-        created_at,
-        last_note,
-        last_status,
-        username,
-      } = data;
+    await Promise.all(
+      profileIds.map(async (v) => {
+        const data = await prismaClient.accounts.findFirst({
+          where: {
+            id: v,
+          },
 
-      const server_username = data.member_servers.filter(
-        (v) => v.server_id === req.serverId
-      )[0].server_username;
+          select: {
+            id: true,
+            avatar: true,
+            banner: true,
+            bio: true,
+            created_at: true,
+            last_note: true,
+            last_status: true,
+            username: true,
+            member_servers: true,
+            member_roles: true,
+          },
+        });
 
-      const server_avatar = data.member_servers.filter(
-        (v) => v.server_id === req.serverId
-      )[0].server_avatar;
+        const {
+          id,
+          avatar,
+          banner,
+          bio,
+          created_at,
+          last_note,
+          last_status,
+          username,
+        } = data;
 
-      const roles = data.member_roles
-        .filter((v) => v.server_id === req.serverId)
-        .map((v) => v.role_id);
+        const server_username = data.member_servers.filter(
+          (v) => v.server_id === req.serverId
+        )[0].server_username;
 
-      const finalData: ServerAccount = {
-        id,
-        avatar,
-        banner,
-        bio,
-        created_at,
-        last_note,
-        last_status,
-        username,
-        server_username,
-        server_avatar,
-        roles,
-      };
+        const server_avatar = data.member_servers.filter(
+          (v) => v.server_id === req.serverId
+        )[0].server_avatar;
 
-      profileData.push(finalData);
-    })
-  );
+        const roles = data.member_roles.filter(
+          (v) => v.server_id === req.serverId
+        );
+
+        const finalData: ServerAccount = {
+          id,
+          avatar,
+          banner,
+          bio,
+          created_at,
+          last_note,
+          last_status,
+          username,
+          server_username,
+          server_avatar,
+          roles,
+        };
+
+        profileData.push(finalData);
+      })
+    );
+  }
 
   return sendSuccess(res, { messages, profileData }, true);
 }
