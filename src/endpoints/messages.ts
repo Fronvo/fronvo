@@ -18,7 +18,7 @@ const fetchMessagesSchema = object({
 export async function createMessage(req: Request, res: Response) {
   const { content } = getParams(req, ["content"]);
 
-  const schemaResult = messageSchema.safeParse({ content });
+  const schemaResult = messageSchema.safeParse({ content: content.trim() });
 
   if (!schemaResult.success) {
     return sendError(400, res, schemaResult.error.errors, true);
@@ -26,7 +26,7 @@ export async function createMessage(req: Request, res: Response) {
 
   const messageData = await prismaClient.member_messages.create({
     data: {
-      content,
+      content: content.trim(),
       profile_id: req.userId,
       channel_id: req.channelId,
       server_id: req.serverId,
