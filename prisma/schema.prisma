@@ -64,7 +64,6 @@ model private_messages {
   reply_id               String?            @db.Uuid
   profile_id             String?            @db.VarChar(30)
   dm_id                  String?            @db.Uuid
-  member_messages        member_messages[]
   private_rooms          private_rooms?     @relation(fields: [dm_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   posts                  posts?             @relation(fields: [post_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   accounts               accounts?          @relation(fields: [profile_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
@@ -115,7 +114,8 @@ model member_messages {
   server_id              String?                  @db.Uuid
   channels               channels?                @relation(fields: [channel_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   accounts               accounts?                @relation(fields: [profile_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  private_messages       private_messages?        @relation(fields: [reply_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  member_messages        member_messages?         @relation("member_messagesTomember_messages", fields: [reply_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  other_member_messages  member_messages[]        @relation("member_messagesTomember_messages")
   servers                servers?                 @relation(fields: [server_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   member_messages_pinned member_messages_pinned[]
 }
@@ -169,7 +169,6 @@ model private_rooms {
 model member_messages_pinned {
   id              String           @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
   message_id      String?          @db.Uuid
-  profile_id      String?          @db.VarChar(30)
   channel_id      String?          @db.Uuid
   server_id       String?          @db.Uuid
   channels        channels?        @relation(fields: [channel_id], references: [id], onDelete: NoAction, onUpdate: NoAction)

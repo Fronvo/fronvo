@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { fromSchema, messageContent, toSchema } from "../schemas";
+import { fromSchema, id, messageContent, toSchema } from "../schemas";
 import { getMessagePinned, getParams, sendError, sendSuccess } from "../utils";
 import { MAX_MESSAGES_LOADED, MAX_PINS, prismaClient } from "../vars";
 import { object } from "zod";
@@ -8,6 +8,7 @@ import { ServerAccount } from "types";
 
 const messageSchema = object({
   content: messageContent,
+  replyId: id.optional(),
 });
 
 const fetchMessagesSchema = object({
@@ -16,7 +17,7 @@ const fetchMessagesSchema = object({
 });
 
 export async function createMessage(req: Request, res: Response) {
-  const { content } = getParams(req, ["content"]);
+  const { content, replyId } = getParams(req, ["content", "replyId"]);
 
   const schemaResult = messageSchema.safeParse({ content: content.trim() });
 
@@ -27,6 +28,7 @@ export async function createMessage(req: Request, res: Response) {
   const messageData = await prismaClient.member_messages.create({
     data: {
       content: content.trim(),
+      reply_id: replyId || undefined,
       profile_id: req.userId,
       channel_id: req.channelId,
       server_id: req.serverId,
@@ -35,6 +37,7 @@ export async function createMessage(req: Request, res: Response) {
     select: {
       id: true,
       content: true,
+      reply_id: true,
       server_id: true,
       channel_id: true,
       profile_id: true,
@@ -110,6 +113,10 @@ export async function fetchMessages(req: Request, res: Response) {
 
     take: -(to - from),
 
+    orderBy: {
+      created_at: "asc",
+    },
+
     select: {
       id: true,
       content: true,
@@ -117,6 +124,7 @@ export async function fetchMessages(req: Request, res: Response) {
       channel_id: true,
       profile_id: true,
       created_at: true,
+      reply_id: true,
     },
   });
 

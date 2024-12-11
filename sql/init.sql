@@ -84,7 +84,7 @@ CREATE TABLE member_messages (
 	attachments			TEXT[],
 	spotify_embed		TEXT,
 	tenor_url			TEXT,
-	reply_id			UUID			REFERENCES private_messages(id),
+	reply_id			UUID			REFERENCES member_messages(id),
 	profile_id			VARCHAR(30)		REFERENCES accounts(id),
 	channel_id			UUID			REFERENCES channels(id),
 	server_id			UUID			REFERENCES servers(id)
