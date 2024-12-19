@@ -169,6 +169,7 @@ model private_rooms {
 model member_messages_pinned {
   id              String           @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
   message_id      String?          @db.Uuid
+  profile_id      String?          @db.VarChar(30)
   channel_id      String?          @db.Uuid
   server_id       String?          @db.Uuid
   channels        channels?        @relation(fields: [channel_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
